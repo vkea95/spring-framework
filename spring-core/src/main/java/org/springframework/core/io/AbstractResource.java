@@ -94,6 +94,7 @@ public abstract class AbstractResource implements Resource {
 	/**
 	 * This implementation throws a FileNotFoundException, assuming
 	 * that the resource cannot be resolved to a URL.
+	 * 直接抛出异常，假设这个资源不能解决URL问题。所以这个类假设不能解决file以外的问题，
 	 */
 	@Override
 	public URL getURL() throws IOException {
@@ -102,10 +103,13 @@ public abstract class AbstractResource implements Resource {
 
 	/**
 	 * This implementation builds a URI based on the URL returned
+	 * 虽然在getURL中，直接抛出了异常，可是此处依然是按照可以获取URI的方式来操作的---没毛病。
+	 * 果然，如此拧巴的类确实一个抽象类
 	 * by {@link #getURL()}.
 	 */
 	@Override
 	public URI getURI() throws IOException {
+//		使用的是getURL内部方法，
 		URL url = getURL();
 		try {
 			return ResourceUtils.toURI(url);
@@ -118,6 +122,7 @@ public abstract class AbstractResource implements Resource {
 	/**
 	 * This implementation throws a FileNotFoundException, assuming
 	 * that the resource cannot be resolved to an absolute file path.
+	 * 作为抽象类，此处没有选择实现，想来也是交给子类实现比较合适的原因吧
 	 */
 	@Override
 	public File getFile() throws IOException {
@@ -129,6 +134,7 @@ public abstract class AbstractResource implements Resource {
 	 * with the result of {@link #getInputStream()}.
 	 * <p>This is the same as in {@link Resource}'s corresponding default method
 	 * but mirrored here for efficient JVM-level dispatching in a class hierarchy.
+	 * 根据getInputStream的结果构建新的channel并返回
 	 */
 	@Override
 	public ReadableByteChannel readableChannel() throws IOException {
@@ -140,6 +146,11 @@ public abstract class AbstractResource implements Resource {
 	 * content length. Subclasses will almost always be able to provide
 	 * a more optimal version of this, e.g. checking a File length.
 	 * @see #getInputStream()
+	 * 提供了一个通用的方法来分析内容长度，所谓内容就是getInputStream的返回值，
+	 * 通过一个while循环的方式，也就是通过传入数组给inputStream的read方法，同时read再返回本次读取长度的方式，
+	 * 配合sum来计算。
+	 * 最后记得要关闭is---->为啥不open就关闭呢。
+	 * TODO：？？？？？
 	 */
 	@Override
 	public long contentLength() throws IOException {
@@ -165,12 +176,15 @@ public abstract class AbstractResource implements Resource {
 	/**
 	 * This implementation checks the timestamp of the underlying File,
 	 * if available.
+	 * 资源最否被修改的时间戳
 	 * @see #getFileForLastModifiedCheck()
 	 */
 	@Override
 	public long lastModified() throws IOException {
 		File fileToCheck = getFileForLastModifiedCheck();
 		long lastModified = fileToCheck.lastModified();
+//		只有时间为零和不存在的时候才会抛出异常，那么其他的状态呢？
+//		TODO：
 		if (lastModified == 0L && !fileToCheck.exists()) {
 			throw new FileNotFoundException(getDescription() +
 					" cannot be resolved in the file system for checking its last-modified timestamp");
@@ -179,6 +193,7 @@ public abstract class AbstractResource implements Resource {
 	}
 
 	/**
+	 * 确定用于检查时间戳的文件，配合上面的那个方法
 	 * Determine the File to use for timestamp checking.
 	 * <p>The default implementation delegates to {@link #getFile()}.
 	 * @return the File to use for timestamp checking (never {@code null})
@@ -193,6 +208,7 @@ public abstract class AbstractResource implements Resource {
 	/**
 	 * This implementation throws a FileNotFoundException, assuming
 	 * that relative resources cannot be created for this resource.
+	 * 抛出异常，假设无法生成相关资源
 	 */
 	@Override
 	public Resource createRelative(String relativePath) throws IOException {
@@ -202,6 +218,8 @@ public abstract class AbstractResource implements Resource {
 	/**
 	 * This implementation always returns {@code null},
 	 * assuming that this resource type does not have a filename.
+	 * 假设无法获得文件名称====》这个和上面假设资源为file的方式，有点不match---所以不会将某个假设贯穿class实现的全部。
+	 * 这个还是很有必要的
 	 */
 	@Override
 	@Nullable
@@ -212,16 +230,19 @@ public abstract class AbstractResource implements Resource {
 
 	/**
 	 * This implementation compares description strings.
+	 * equal比较的标准就是比较getDescription
 	 * @see #getDescription()
 	 */
 	@Override
 	public boolean equals(Object other) {
+//		比较的传统套路，是否为自己，是否是这个类的实例，然后再进入 实质的description比较
 		return (this == other || (other instanceof Resource &&
 				((Resource) other).getDescription().equals(getDescription())));
 	}
 
 	/**
 	 * This implementation returns the description's hash code.
+	 * 设定：hashCode来自一个方法getDescription，
 	 * @see #getDescription()
 	 */
 	@Override
@@ -231,6 +252,7 @@ public abstract class AbstractResource implements Resource {
 
 	/**
 	 * This implementation returns the description of this resource.
+	 * toString是通过getDescription来完成的
 	 * @see #getDescription()
 	 */
 	@Override
