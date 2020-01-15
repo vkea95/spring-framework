@@ -66,6 +66,11 @@ public class FileSystemResource extends AbstractResource implements WritableReso
 
 
 	/**
+	 * 根据文件路径生成FileSystemResource
+	 * 特定的资源基本路径是否以斜线结束，
+	 * "C:/dir1/"，相对路径将会被再root下建立
+	 * 相对路径"dir2" -> "C:/dir1/dir2"
+	 * "C:/dir1",相对路径将会生效再同一个路径level：相对路径"dir2" -> "C:/dir2"
 	 * Create a new {@code FileSystemResource} from a file path.
 	 * <p>Note: When building relative resources via {@link #createRelative},
 	 * it makes a difference whether the specified resource base path here
@@ -84,6 +89,8 @@ public class FileSystemResource extends AbstractResource implements WritableReso
 	}
 
 	/**
+	 * 根据文件句柄生成FileSystemResource
+	 * 当创建相关资源
 	 * Create a new {@code FileSystemResource} from a {@link File} handle.
 	 * <p>Note: When building relative resources via {@link #createRelative},
 	 * the relative path will apply <i>at the same directory level</i>:

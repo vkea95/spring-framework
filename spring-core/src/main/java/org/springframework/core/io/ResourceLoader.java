@@ -20,6 +20,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ResourceUtils;
 
 /**
+ * 为了加载资源的策略接口
  * Strategy interface for loading resources (e.. class path or file system
  * resources). An {@link org.springframework.context.ApplicationContext}
  * is required to provide this functionality, plus extended
@@ -27,7 +28,7 @@ import org.springframework.util.ResourceUtils;
  *
  * <p>{@link DefaultResourceLoader} is a standalone implementation that is
  * usable outside an ApplicationContext, also used by {@link ResourceEditor}.
- *
+ * 是一个独立实现--它是一个可用的，在应用上下文之外，也被ResourceEditor.bean properties使用
  * <p>Bean properties of type Resource and Resource array can be populated
  * from Strings when running in an ApplicationContext, using the particular
  * context's resource loading strategy.
@@ -46,6 +47,13 @@ public interface ResourceLoader {
 
 
 	/**
+	 * 返回资源句柄为特定的资源位置
+	 * 句柄应该一直是一个可重用资源描述服，允许多个getInputStream calls
+	 * 必须支持标准的URLs
+	 * 必须支持class路径伪URL
+	 * 必须支持相对的文件路径
+	 * 一个资源句柄不能意味着一个存在的资源
+	 * 需要通过调用 exists 来判断存在
 	 * Return a Resource handle for the specified resource location.
 	 * <p>The handle should always be a reusable resource descriptor,
 	 * allowing for multiple {@link Resource#getInputStream()} calls.
@@ -67,6 +75,8 @@ public interface ResourceLoader {
 	Resource getResource(String location);
 
 	/**
+	 * 暴露被资源加载器所使用的 类加载器
+	 * 获得类加载器，而不是依靠线程上下文的类加载器
 	 * Expose the ClassLoader used by this ResourceLoader.
 	 * <p>Clients which need to access the ClassLoader directly can do so
 	 * in a uniform manner with the ResourceLoader, rather than relying
